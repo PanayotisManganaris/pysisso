@@ -9,6 +9,7 @@
 import subprocess
 
 from custodian.custodian import Job  # type: ignore
+from os.path import isfile, expanduser
 from monty.os.path import which  # type: ignore
 
 
@@ -20,7 +21,7 @@ class SISSOJob(Job):
 
     def __init__(
         self,
-        SISSO_exe: str = "SISSO",
+        SISSO_exe: Union[str,None] = None,
         nprocs: int = 1,
         stdout_file: str = "SISSO.log",
         stderr_file: str = "SISSO.err",
@@ -48,14 +49,15 @@ class SISSOJob(Job):
         Returns:
             a Popen process.
         """
-        exe = which(self.SISSO_exe)
-        if exe is None:
+        exe = expanduser(self.SISSO_exe) if self.SISSO_exe else which("SISSO")
+        if exe is None or not isfile(exe):
             raise ValueError(
-                "SISSOJob requires the SISSO executable to be in the path.\n"
-                'Default executable name is "SISSO" and you provided "{}".\n'
-                "Download the SISSO code at https://github.com/rouyang2017/SISSO "
-                "and compile the executable or fix the name of your executable.".format(
-                    self.SISSO_exe
+                "SISSOJob requires path/to/a/SISSO executable to be provided\n"
+                'or for "SISSO" to be in the path.\n'
+                f'you provided "{=self.SISSO_exe}".\n'
+                "Make sure the path includes the SISSO binary explicitly. Otherwise"
+                "download the SISSO code at https://github.com/rouyang2017/SISSO "
+                "and compile the executable and pass it's name."
                 )
             )
 
@@ -67,8 +69,7 @@ class SISSOJob(Job):
             cmd = exe
 
         with open(self.stdout_file, "w") as f_stdout, open(
-            self.stderr_file, "w", buffering=1
-        ) as f_stderr:
+                self.stderr_file, "w", buffering=1) as f_stderr:
             p = subprocess.Popen(cmd, stdin=None, stdout=f_stdout, stderr=f_stderr)
         return p
 
