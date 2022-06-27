@@ -46,6 +46,7 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
 
     def __init__(
         self,
+        SISSOpath=None,
         ntask=1,
         task_weighting=1,
         desc_dim=2,
@@ -266,7 +267,7 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         with cd(self.run_dir):
             self.sisso_in.to_file(filename="SISSO.in")
             sisso_dat.to_file(filename="train.dat")
-            job = SISSOJob()
+            job = SISSOJob(SISSO_exe=SISSOpath)
             c = Custodian(jobs=[job], handlers=[], validators=[])
             c.run()
             self.sisso_out = SISSOOut.from_file(  # pylint: disable=W0201
