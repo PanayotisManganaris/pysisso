@@ -9,6 +9,7 @@
 import subprocess
 
 from custodian.custodian import Job  # type: ignore
+from typing import Union
 from os.path import isfile, expanduser
 from monty.os.path import which  # type: ignore
 
@@ -54,11 +55,10 @@ class SISSOJob(Job):
             raise ValueError(
                 "SISSOJob requires path/to/a/SISSO executable to be provided\n"
                 'or for "SISSO" to be in the path.\n'
-                f'you provided "{=self.SISSO_exe}".\n'
+                f'you provided "{self.SISSO_exe}".\n'
                 "Make sure the path includes the SISSO binary explicitly. Otherwise"
                 "download the SISSO code at https://github.com/rouyang2017/SISSO "
                 "and compile the executable and pass it's name."
-                )
             )
 
         if (
