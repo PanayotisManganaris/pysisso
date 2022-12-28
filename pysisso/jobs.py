@@ -9,9 +9,8 @@
 import subprocess
 
 from custodian.custodian import Job  # type: ignore
-from typing import Union
 from os.path import isfile, expanduser
-from monty.os.path import which  # type: ignore
+from shutil import which
 
 
 class SISSOJob(Job):
@@ -22,7 +21,7 @@ class SISSOJob(Job):
 
     def __init__(
         self,
-        SISSO_exe: Union[str,None] = None,
+        SISSO_exe: str|None = None,
         nprocs: int = 1,
         stdout_file: str = "SISSO.log",
         stderr_file: str = "SISSO.err",
@@ -61,16 +60,15 @@ class SISSOJob(Job):
                 "and compile the executable and pass it's name."
             )
 
-        if (
-            self.nprocs > 1
-        ):  # pragma: no cover # Reason: obviously not yet implemented section of code.
+        if (self.nprocs > 1):
             raise NotImplementedError("Running SISSO with MPI not yet implemented.")
+            # exe = mpiexec -n self.nprocs exe
         else:
-            cmd = exe
+            exe = exe
 
         with open(self.stdout_file, "w") as f_stdout, open(
                 self.stderr_file, "w", buffering=1) as f_stderr:
-            p = subprocess.Popen(cmd, stdin=None, stdout=f_stdout, stderr=f_stderr)
+            p = subprocess.Popen(exe, stdin=None, stdout=f_stdout, stderr=f_stderr)
         return p
 
     def postprocess(self):
