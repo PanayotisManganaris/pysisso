@@ -6,8 +6,10 @@
 
 """Module containing classes to parse SISSO output files."""
 
+from __future__ import annotations
+
 import re
-from typing import Callable, List, Mapping, Optional, Tuple, Union
+from typing import Callable, Mapping
 
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
@@ -19,7 +21,7 @@ from pysisso.utils import list_of_ints, list_of_strs, matrix_of_floats, str_to_b
 class SISSOVersion(MSONable):
     """Class containing information about the SISSO version used."""
 
-    def __init__(self, header_string: str, version: Tuple[int, int, int]):
+    def __init__(self, header_string: str, version: tuple[int, int, int]):
         """Construct SISSOVersion class.
 
         Args:
@@ -212,17 +214,17 @@ class SISSOModel(MSONable):
     def __init__(
         self,
         dimension: int,
-        descriptors: List[SISSODescriptor],
-        coefficients: List[List[float]],
-        intercept: List[float],
-        rmse: Union[List[float], None] = None,
-        maxae: Union[List[float], None] = None,
+        descriptors: list[SISSODescriptor],
+        coefficients: list[list[float]],
+        intercept: list[float],
+        rmse: list[float]|None = None,
+        maxae: list[float]|None = None,
     ):
         """Construct SISSOModel class.
 
         Args:
             dimension: Dimension of the model.
-            descriptors: List of descriptors used in the model.
+            descriptors: list of descriptors used in the model.
             coefficients: Coefficient of each descriptor for each task/property.
             intercept: Intercept of the model for each task/property.
             rmse: Root Mean Squared Error of the model on the training data for each
@@ -270,7 +272,7 @@ class SISSOModel(MSONable):
         """
         lines = string.split("\n")
         dimension = int(lines[1].split("D descriptor")[0])
-        descriptors: Optional[List[SISSODescriptor]] = None
+        descriptors: list[SISSODescriptor]|None = None
         coefficients = []
         intercept = []
         rmse = []
@@ -386,7 +388,7 @@ class SISSOIteration(MSONable):
 class SISSOParams(MSONable):
     """Class containing input parameters extracted from the SISSO output file."""
 
-    PARAMS: List[Tuple[str, str, Union[type, Callable]]] = [
+    PARAMS: list[tuple[str, str, type|Callable]] = [
         ("property_type", "Descriptor dimension:", int),
         ("descriptor_dimension", "Descriptor dimension:", int),
         ("total_number_properties", "Total number of properties:", int),
@@ -441,8 +443,8 @@ class SISSOParams(MSONable):
         property_type: int,
         descriptor_dimension: int,
         total_number_properties: int,
-        task_weighting: List[int],
-        number_of_samples: List[int],
+        task_weighting: list[int],
+        number_of_samples: list[int],
         n_scalar_features: int,
         n_rungs: int,
         max_feature_complexity: int,
@@ -450,8 +452,8 @@ class SISSOParams(MSONable):
         dimension_types: int,
         lower_bound_maxabs_value: float,
         upper_bound_maxabs_value: float,
-        SIS_subspaces_sizes: List[int],
-        operators: List[str],
+        SIS_subspaces_sizes: list[int],
+        operators: list[str],
         sparsification_method: str,
         n_topmodels: int,
         fit_intercept: bool,
@@ -524,15 +526,15 @@ class SISSOOut(MSONable):
     def __init__(
         self,
         params: SISSOParams,
-        iterations: List[SISSOIteration],
+        iterations: list[SISSOIteration],
         version: SISSOVersion,
-        cpu_time: Optional[float],
+        cpu_time: float|None,
     ):
         """Construct SISSOOut class.
 
         Args:
             params: Parameters used for SISSO (as a SISSOParams object).
-            iterations: List of SISSO iterations.
+            iterations: list of SISSO iterations.
             version: Information about the version of SISSO used as a SISSOVersion
                 object.
             cpu_time: Wall-clock CPU time from the output file.

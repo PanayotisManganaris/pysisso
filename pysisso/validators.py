@@ -20,7 +20,7 @@ class NormalCompletionValidator(Validator):
         stdout_file: str = "SISSO.log",
         stderr_file: str = "SISSO.err",
     ):
-        """Construct NormalCompletionValidator class.
+        """Construct NormalCompletionValidator object.
 
         This validator checks that the standard error file (SISSO.err by default) is
         empty, that the standard output file is not empty and that the output file

@@ -6,12 +6,18 @@
 
 """Module containing classes to create and manipulate SISSO input files."""
 
+from __future__ import annotations
+
 import datetime
-from typing import List, Union
+from typing import Literal
+
+TASK = Literal["regression", "classification"]
+
+# Classification is not yet supported (needs the items in the same classes to
+# be grouped together).
 
 import pandas as pd  # type: ignore
 from monty.json import MSONable  # type: ignore
-
 
 class SISSODat(MSONable):
     """Main class containing the data for SISSO (training, test or new data)."""
@@ -19,9 +25,9 @@ class SISSODat(MSONable):
     def __init__(
         self,
         data: pd.DataFrame,
-        features_dimensions: Union[dict, None] = None,
-        model_type: str = "regression",
-        nsample: Union[List[int], int, None] = None,
+        features_dimensions: dict|None = None,
+        model_type: TASK = "regression",
+        nsample: list[int]|int|None = None,
     ):
         """Construct SISSODat class.
 
@@ -29,9 +35,6 @@ class SISSODat(MSONable):
         the identifiers for each data point (e.g. material identifier, batch number of
         a process, ...), the second column contains the property to be predicted and
         the other columns are the base features.
-
-        Classification is not yet supported (needs the items in the same classes to
-        be grouped together).
 
         Args:
             data: Input data as pandas DataFrame object. The first column must be the
@@ -51,9 +54,9 @@ class SISSODat(MSONable):
             ValueError: if nsample is not compatible with the data frame.
 
         Notes:
-            The pandas index has not be used for the identifier here. Indeed when
-            Multi-Task SISSO is used, the same identifier can occur for two different
-            tasks/properties.
+            The pandas index has not be used for the identifier here.
+            So, when Multi-Task SISSO is used, the same identifier can occur for
+            two different tasks/properties.
         """
         self.data = data
         self.features_dimensions = features_dimensions

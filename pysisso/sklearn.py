@@ -6,10 +6,11 @@
 
 """Module containing a scikit-learn compliant interface to SISSO."""
 
+from __future__ import annotations
+
 import shutil
 import tempfile
 from datetime import datetime
-from typing import Optional, Union
 
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
@@ -22,7 +23,7 @@ from pysisso.jobs import SISSOJob
 from pysisso.outputs import SISSOOut
 
 
-def get_timestamp(tstamp: Optional[datetime] = None) -> object:
+def get_timestamp(tstamp: datetime|None = None) -> object:
     """Get a string representing the a time stamp.
 
     Args:
@@ -76,11 +77,11 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         L1_minrmse=None,
         L1_warm_start=None,
         L1_weighted=None,
-        features_dimensions: Union[dict, None] = None,
+        features_dimensions: dict|None = None,
         use_custodian: bool = True,
-        custodian_job_kwargs: Union[None, dict] = None,
-        custodian_kwargs: Union[None, dict] = None,
-        run_dir: Union[None, str] = "SISSO_dir",
+        custodian_job_kwargs: None|dict = None,
+        custodian_kwargs: None|dict = None,
+        run_dir: None|str = "SISSO_dir",
         clean_run_dir: bool = False,
     ):  # noqa: D417
         """Construct SISSORegressor class.
@@ -299,9 +300,9 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         cls,
         desc_dim,
         use_custodian: bool = True,
-        custodian_job_kwargs: Union[None, dict] = None,
-        custodian_kwargs: Union[None, dict] = None,
-        run_dir: Union[None, str] = "SISSO_dir",
+        custodian_job_kwargs: None|dict = None,
+        custodian_kwargs: None|dict = None,
+        run_dir: None|str = "SISSO_dir",
         clean_run_dir: bool = False,
     ):
         """Construct SISSORegressor for Orthogonal Matching Pursuit (OMP).

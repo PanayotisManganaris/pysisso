@@ -6,10 +6,11 @@
 
 """Module containing various utility functions for pysisso."""
 
+from __future__ import annotations
+
 import os
 import shutil
 import subprocess
-from typing import List, Union
 
 from monty.tempfile import ScratchDir  # type: ignore
 
@@ -55,7 +56,7 @@ def get_version(SISSO_exe="SISSO"):
                 return {"version": version, "header": header.strip()}
 
 
-def list_of_ints(string: str, delimiter: Union[str, None] = None) -> List[int]:
+def list_of_ints(string: str, delimiter: str|None = None) -> list[int]:
     """Cast a string to a list of integers.
 
     Args:
@@ -67,8 +68,8 @@ def list_of_ints(string: str, delimiter: Union[str, None] = None) -> List[int]:
 
 
 def list_of_strs(
-    string: str, delimiter: Union[str, None] = None, strip=True
-) -> List[str]:
+    string: str, delimiter: str|None = None, strip=True
+) -> list[str]:
     """Cast a string to a list of strings.
 
     Args:
@@ -84,8 +85,8 @@ def list_of_strs(
 
 
 def matrix_of_floats(
-    string: str, delimiter_ax0: str = "\n", delimiter_ax1: Union[str, None] = None
-) -> List[List[float]]:
+    string: str, delimiter_ax0: str = "\n", delimiter_ax1: str|None = None
+) -> list[list[float]]:
     """Cast a string to a list of list of floats.
 
     Args:

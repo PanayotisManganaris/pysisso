@@ -6,6 +6,8 @@
 
 """Module containing the custodian jobs for SISSO."""
 
+from __future__ import annotations
+
 import subprocess
 
 from custodian.custodian import Job  # type: ignore
