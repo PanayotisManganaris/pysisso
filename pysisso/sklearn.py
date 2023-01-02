@@ -273,9 +273,7 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
             job = SISSOJob(SISSO_exe=self.SISSOpath)
             c = Custodian(jobs=[job], handlers=[], validators=[])
             c.run()
-            self.sisso_out = SISSOOut.from_file(  # pylint: disable=W0201
-                filepath="SISSO.out"
-            )
+            self.sisso_out = SISSOOut.from_file()
 
         # Clean run directory
         if (

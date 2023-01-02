@@ -555,40 +555,31 @@ class SISSOOut(MSONable):
         with open(filepath, "r") as f:
             string = f.read()
 
-        r = r"Reading parameters from SISSO\.in:\s?\n-{80}.*?-{80}"
-        match = re.findall(r, string, re.DOTALL)
-        if len(match) != 1:  # pragma: no cover, wrong SISSO output
+        r = r"Have a nice day !"
+        match = re.search(r, string) 
+        if not match:
             raise ValueError(
-                "Should get exactly one excerpt for input parameters in the string."
+                "SISSO.out should end with 'Have a nave day !'"
             )
-        params = SISSOParams.from_string(match[0])
 
-        r = r"iteration:.*?DI done!"
+        params = SISSOParams.from_string(string)
+        
+        r = r"Dimension:.*?(?=Time \(second\) used for this DI:).*?\n"
         match = re.findall(r, string, re.DOTALL)
-
         iterations = []
         for iteration_string in match:
-            iterations.append(SISSOIteration.from_string(iteration_string))
-
-        r = r"Total wall-clock time \(second\):.*?\n"
-        match = re.findall(r, string)
-        if len(match) == 0:
-            if not allow_unfinished:
-                raise ValueError(
-                    "Should get exactly one total cpu time in the string, got 0."
-                )
-            cpu_time = None
-        elif len(match) > 1:  # pragma: no cover, wrong SISSO output
-            raise ValueError(
-                "Should get exactly one total cpu time in the string, "
-                "got {:d}.".format(len(match))
+            iterations.append(
+                SISSOIteration.from_string(iteration_string)
             )
-        else:
-            cpu_time = float(match[0].split()[-1])
 
         with open(filepath, "r") as f:
-            header = f.readline()
+            header_lines = [next(f) for x in range(3)]
+        header = header_lines[2]
         version = SISSOVersion.from_string(header)
+
+        r = r"Total time \(second\):.*\n"
+        match = re.search(r, string)
+        cpu_time = float(match[0].split()[-1])
 
         return cls(
             params=params, iterations=iterations, version=version, cpu_time=cpu_time
