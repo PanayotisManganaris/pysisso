@@ -272,16 +272,25 @@ class SISSOIn(MSONable):
         "restart": tuple([bool]),
         "rung": tuple([int]),
         "opset": tuple(["str_operators"]),
+        "ops": tuple(["str_operators"]),
         "maxcomplexity": tuple([int]),
+        "fcomplexity": tuple([int]),
         "dimclass": tuple(["str_dimensions"]),
+        "funit": tuple(["str_dimensions"]),
         "maxfval_lb": tuple([float]),
         "maxfval_ub": tuple([float]),
+        "fmax_min": tuple([float]),
+        "fmax_max": tuple([float]),
         "subs_sis": tuple([int, "list_of_ints"]),
+        "nf_sis": tuple([int, "list_of_ints"]),
         "method": tuple([str]),
+        "method_so": tuple([str]),
         "L1L0_size4L0": tuple([int]),
+        "nl1l0": tuple([int]),
         "fit_intercept": tuple([bool]),
         "metric": tuple([str]),
         "nm_output": tuple([int]),
+        "nmodels": tuple([int]),
         "isconvex": tuple(["str_isconvex"]),
         "width": tuple([float]),
         "nvf": tuple([int]),
@@ -369,10 +378,10 @@ class SISSOIn(MSONable):
         #   number of features, we get :
         #   "Program received signal SIGSEGV: Segmentation fault - invalid memory
         #       reference." in SISSO.err
-        uses_L1L0 = self.descriptor_identification_keywords["method"] == "L1L0"
+        uses_L1L0 = self.descriptor_identification_keywords["method_so"] == "L1L0"
         if uses_L1L0:
             desc_dim = self.target_properties_keywords["desc_dim"]
-            L1L0_size4L0 = self.descriptor_identification_keywords["L1L0_size4L0"]
+            L1L0_size4L0 = self.descriptor_identification_keywords["nl1l0"]
             subs_sis = self.feature_construction_sure_independence_screening_keywords[
                 "subs_sis"
             ]
@@ -403,7 +412,7 @@ class SISSOIn(MSONable):
                         if not fix:
                             raise ValueError(
                                 "Number of features to be screened by L1 for L0 "
-                                "(L1L0_size4L0={:d}) is larger than SIS-selected "
+                                "(nl1l0={:d}) is larger than SIS-selected "
                                 "subspace (subs_sis={:d}) of dimension {:d}.".format(
                                     L1L0_size4L0, subs_sis_dim, dim
                                 )
@@ -415,8 +424,8 @@ class SISSOIn(MSONable):
                 )
 
     def _format_kw_value(self, kw, val, float_format=".12f"):
+        """Determine the type of the value for the keyword"""
         allowed_types = self.KW_TYPES[kw]
-        # Determine the type of the value for this keyword
         val_type = None
         for allowed_type in allowed_types:
             if allowed_type is int:
@@ -522,8 +531,6 @@ class SISSOIn(MSONable):
                 "! CLASSIFICATION MODEL !\n"
                 "!----------------------!\n"
             )
-
-        # Keywords related to target properties
         out.append(
             "!------------------------------------!\n"
             "! Keywords for the target properties !\n"
@@ -533,10 +540,6 @@ class SISSOIn(MSONable):
             if sisso_val is None:
                 continue
             out.append(self._format_kw_value(kw=sisso_kw, val=sisso_val))
-        out.append("")
-
-        # Keywords related to feature construction (FC) and
-        #  sure independence screening (SIS)
         out.append(
             "!----------------------------------------"
             "--------------------------------------!\n"
@@ -552,9 +555,6 @@ class SISSOIn(MSONable):
             if sisso_val is None:
                 continue
             out.append(self._format_kw_value(kw=sisso_kw, val=sisso_val))
-        out.append("")
-
-        # Keywords descriptor identification via a sparsifying operator
         out.append(
             "!------------------------------------------------------------------!\n"
             "! Keyword for descriptor identification via a sparsifying operator !\n"
@@ -598,6 +598,7 @@ class SISSOIn(MSONable):
         rung=2,
         opset="(+)(-)",
         maxcomplexity=10,
+        fcomplexity=3,
         dimclass=None,
         maxfval_lb=1e-3,
         maxfval_ub=1e5,
@@ -639,23 +640,31 @@ class SISSOIn(MSONable):
         tp_kwds["restart"] = restart
         fcsis_kwds = dict()
         fcsis_kwds["nsf"] = nsf
-        fcsis_kwds["rung"] = rung
-        fcsis_kwds["opset"] = opset
-        fcsis_kwds["maxcomplexity"] = maxcomplexity
-        fcsis_kwds["dimclass"] = dimclass
-        fcsis_kwds["maxfval_lb"] = maxfval_lb
-        fcsis_kwds["maxfval_ub"] = maxfval_ub
-        fcsis_kwds["subs_sis"] = subs_sis
+        # fcsis_kwds["rung"] = rung
+        # fcsis_kwds["opset"] = opset
+        fcsis_kwds["ops"] = opset
+        # fcsis_kwds["maxcomplexity"] = maxcomplexity
+        fcsis_kwds["fcomplexity"] = fcomplexity
+        # fcsis_kwds["dimclass"] = dimclass
+        fcsis_kwds["funit"] = dimclass
+        # fcsis_kwds["maxfval_lb"] = maxfval_lb
+        # fcsis_kwds["maxfval_ub"] = maxfval_ub
+        fcsis_kwds["fmax_min"] = maxfval_lb
+        fcsis_kwds["fmax_max"] = maxfval_ub
+        # fcsis_kwds["subs_sis"] = subs_sis
+        fcsis_kwds["nf_sis"] = subs_sis
         fcsis_kwds["nvf"] = nvf
         fcsis_kwds["vfsize"] = vfsize
         fcsis_kwds["vf2sf"] = vf2sf
         fcsis_kwds["npf_must"] = npf_must
         di_kwds = dict()
-        di_kwds["method"] = method
-        di_kwds["L1L0_size4L0"] = L1L0_size4L0
+        # di_kwds["method"] = method
+        di_kwds["method_so"] = method
+        di_kwds["nl1l0"] = L1L0_size4L0
         di_kwds["fit_intercept"] = fit_intercept
         di_kwds["metric"] = metric
-        di_kwds["nm_output"] = nm_output
+        # di_kwds["nm_output"] = nm_output
+        di_kwds["nmodels"] = nm_output
         di_kwds["isconvex"] = isconvex
         di_kwds["width"] = width
         di_kwds["L1_max_iter"] = L1_max_iter
@@ -725,7 +734,7 @@ class SISSOIn(MSONable):
 
     @classmethod
     def from_SISSO_dat(
-        cls, sisso_dat: SISSODat, model_type: str = "regression", **kwargs: object
+        cls, sisso_dat: SISSODat, model_type: TASK = "regression", **kwargs: object
     ):
         """Construct SISSOIn object from SISSODat object.
 
