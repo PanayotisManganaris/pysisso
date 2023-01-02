@@ -94,6 +94,9 @@ class SISSODescriptor(MSONable):
         """
         return self.descriptor_string
 
+    def __repr__(self):
+        return self.__str__()
+
     @staticmethod
     def _decode_function(string):
         """Get a function based on the string."""
@@ -205,7 +208,7 @@ class SISSODescriptor(MSONable):
                 descriptor of SISSO.
         """
         sp = string.split(":")
-        return cls(descriptor_id=int(sp[0]), descriptor_string=sp[1][1:].split("]")[0])
+        return cls(descriptor_id=int(sp[0]), descriptor_string=sp[1][1:-1])
 
 
 class SISSOModel(MSONable):
