@@ -66,6 +66,8 @@ class SISSOJob(Job):
             raise NotImplementedError("Running SISSO with MPI not yet implemented.")
             # exe = mpiexec -n self.nprocs exe
         else:
+            # source ~/opt/intel/oneapi/compiler/2022.1.0/env/vars.sh
+            # source ~/opt/intel/oneapi/mpi/2021.6.0/env/vars.sh
             exe = exe
 
         with open(self.stdout_file, "w") as f_stdout, open(
