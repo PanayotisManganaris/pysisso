@@ -209,48 +209,46 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         if len(self.columns) != X.shape[1]:
             raise ValueError("Columns should be of the size of the second axis of X.")
 
-        # Set up data
-        X = np.array(X)
-        y = np.array(y)
+        if index is None and isinstance(X, pd.DataFrame):
+            index = list(X.index)
+        index = index or [
+            "sample{:d}".format(ii) for ii in range(1, X.shape[0] + 1)
+        ]
+
+        if len(index) != len(y) or len(index) != len(X):
+            raise ValueError("Index, X and y should have same size.")
+
+
         if y.ndim == 1 or (y.ndim == 2 and y.shape[1] == 1):  # Single-Task SISSO
             self.ntasks = 1  # pylint: disable=W0201
-            index = index or [
-                "sample{:d}".format(ii) for ii in range(1, X.shape[0] + 1)
-            ]
-            if len(index) != len(y) or len(index) != len(X):
-                raise ValueError("Index, X and y should have same size.")
-            nsample = None
+            X = np.array(X)
+            X = pd.DataFrame(X, index = index, columns = self.columns)
+            y = np.array(y)
+            y = pd.Series(y, index = index)
+            nsample = int(y.notna().sum(axis=0))
+
+            data = X
+            data.insert(0, "target", y)
+            data.insert(0, "identifier", index)
         elif y.ndim == 2 and y.shape[1] > 1:  # Multi-Task SISSO
             self.ntasks = y.shape[1]  # pylint: disable=W0201
-            samples_index = index or [
-                "sample{:d}".format(ii) for ii in range(1, X.shape[0] + 1)
-            ]
             tasks = tasks or ["task{:d}".format(ii) for ii in range(1, self.ntasks + 1)]
-            newX = np.zeros((0, X.shape[1]))
-            newy = np.array([])
-            index = []
-            nsample = []
-            for itask in range(self.ntasks):
-                yadd = y[:, itask]
-                nanindices = np.argwhere(np.isnan(yadd)).flatten()
-                totake = [ii for ii in range(len(yadd)) if ii not in nanindices]
-                newy = np.concatenate([newy, np.take(yadd, indices=totake)])
-                newX = np.row_stack([newX, np.take(X, indices=totake, axis=0)])
-                nsample.append(len(totake))
-                index.extend(
-                    [
-                        "{}_{}".format(sample_index, tasks[itask])
-                        for i_sample, sample_index in enumerate(samples_index)
-                        if i_sample in totake
-                    ]
-                )
-            X = newX
-            y = newy
+            X = np.array(X)
+            X = pd.DataFrame(X, index = index, columns = self.columns)
+            y = np.array(y)
+            y = pd.DataFrame(y, index = index, columns = tasks)
+            nsample = y.notna().sum(axis=0).to_list()
+
+            y = y.stack(dropna=True)
+            y.name = 'target'
+            y.index.names = ('identifier', 'task')
+            y = y.reset_index().set_index('identifier')
+            data = y.join(X)
+            data.insert(0, "identifier", data.index)
+            data = data.sort_values('task')
+            data = data.drop('task', axis=1)
         else:
             raise ValueError("Wrong shapes.")
-        data = pd.DataFrame(X, index=index, columns=self.columns)
-        data.insert(0, "target", y)
-        data.insert(0, "identifier", index)
 
         # Set up SISSODat and SISSOIn
         sisso_dat = SISSODat(
