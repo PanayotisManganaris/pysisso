@@ -22,7 +22,7 @@ class SISSOVersion(MSONable):
     """Class containing information about the SISSO version used."""
 
     def __init__(self, header_string: str, version: list[int]):
-        """Construct SISSOVersion class.
+        """Construct SISSOVersion object.
 
         Args:
             header_string: Header string found in the SISSO.out output file.
@@ -65,7 +65,7 @@ class SISSODescriptor(MSONable):
     """Class containing one composed descriptor."""
 
     def __init__(self, descriptor_id: int, descriptor_string: str):
-        """Construct SISSODescriptor class.
+        """Construct SISSODescriptor object.
 
         Args:
             descriptor_id: Integer identifier of this descriptor.
@@ -220,7 +220,7 @@ class SISSOModel(MSONable):
         rmse: list[float]|None = None,
         maxae: list[float]|None = None,
     ):
-        """Construct SISSOModel class.
+        """Construct SISSOModel object.
 
         Args:
             dimension: Dimension of the model.
@@ -317,7 +317,7 @@ class SISSOIteration(MSONable):
         SIS_subspace_size: int,
         cpu_time: float,
     ):
-        """Construct SISSOIteration class.
+        """Construct SISSOIteration object.
 
         Args:
             iteration_number: Number of the iteration.
@@ -530,7 +530,7 @@ class SISSOOut(MSONable):
         version: SISSOVersion,
         cpu_time: float|None,
     ):
-        """Construct SISSOOut class.
+        """Construct SISSOOut object.
 
         Args:
             params: Parameters used for SISSO (as a SISSOParams object).
