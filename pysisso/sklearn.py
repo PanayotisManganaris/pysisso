@@ -86,8 +86,8 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
     ):  # noqa: D417
         """Construct SISSORegressor class.
 
-        All arguments not listed below are arguments from the SISSO code. For more
-        information, see https://github.com/rouyang2017/SISSO.
+        For more information on running the SISSO code see
+        https://github.com/rouyang2017/SISSO/blob/master/SISSO_Guide.pdf
 
         Args:
             use_custodian: Whether to use custodian (currently mandatory).
@@ -98,6 +98,7 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
             clean_run_dir: Whether to clean the run directory after SISSO has run.
         """
         self.SISSOpath = SISSOpath
+
         self.ntask = ntask
         self.task_weighting = task_weighting
         self.desc_dim = desc_dim
@@ -134,35 +135,6 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         self.run_dir = run_dir
         self.clean_run_dir = clean_run_dir
 
-    def fit(self, X, y, index=None, columns=None, tasks=None):
-        """Fit a SISSO regression based on inputs X and output y.
-
-        This method supports Multi-Task SISSO. For Single-Task SISSO, y must have a
-        shape (n_samples) or (n_samples, 1).
-        For Multi-Task SISSO, y must have a shape (n_samples, n_tasks). The arrays
-        will be reshaped to fit SISSO's input files.
-        For example, with 10 samples and 3 properties, the output array (y) will be
-        reshaped to (30, 1). The input array (X) is left unchanged.
-        It is also possible to provide samples without an output for some properties
-        by setting that property to NaN. In that case, the corresponding values in the
-        input (X) and output (y) arrays will be removed from the SISSO inputs.
-        In the previous example, if 2 of the samples have NaN for the first property,
-        1 sample has Nan for the second property and 4 samples have Nan for the third
-        property, the final output array (y) will have a shape (30-2-1-4, 1), i.e.
-        (23, 1), while the final input array (X) will have a shape (23, n_features).
-
-        Args:
-            X: Feature vectors as an array-like of shape (n_samples, n_features).
-            y: Target values as an array-like of shape (n_samples,)
-                or (n_samples, n_tasks).
-            index: List of string identifiers for each sample. If None, "sampleN"
-                with N=[1, ..., n_samples] will be used.
-            columns: List of string names of the features. If None, "featN"
-                with N=[1, ..., n_features] will be used.
-            tasks: When Multi-Task SISSO is used, this is the list of string names
-                that will be used for each task/property. If None, "taskN"
-                with N=[1, ..., n_tasks] will be used.
-        """
         if not self.use_custodian:
             raise NotImplementedError
 
@@ -198,6 +170,35 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
             L1_warm_start=self.L1_warm_start,
             L1_weighted=self.L1_weighted,
         )
+
+    def fit(self, X, y, index=None, columns=None, tasks=None):
+        """Fit a SISSO regression based on inputs X and output y.
+
+        This method supports Multi-Task SISSO. For Single-Task SISSO, y must have a
+        shape (n_samples) or (n_samples, 1).
+
+        For Multi-Task SISSO, y must have a shape (n_samples, n_tasks) and can
+        contain NaN values in order to represent incomplete samples. The arrays will
+        be reshaped to fit SISSO's input files. NaNs will be automatically removed.
+
+        For example, if 2 of 10 samples have NaN for the first task, 1 sample has Nan
+        for the second task and 4 samples have Nan for the third task, the final
+        output array (y) will have a shape (3*10-2-1-4, 1), i.e. (23, 1), while the
+        final input array (X) will have a shape (23, n_features).
+
+        Args:
+            X: Feature vectors as an array-like of shape (n_samples, n_features).
+            y: Target values as an array-like of shape (n_samples,)
+                or (n_samples, n_tasks).
+            index: List of string identifiers for each sample. If None, "sampleN"
+                with N=[1, ..., n_samples] will be used.
+            columns: List of string names of the features. If None, "featN"
+                with N=[1, ..., n_features] will be used.
+            tasks: When Multi-Task SISSO is used, this is the list of string names
+                that will be used for each task/property. If None, "taskN"
+                with N=[1, ..., n_tasks] will be used.
+
+        """
         # Set up columns. These columns are used by the SISSO model wrapper afterwards
         # for the prediction
         if columns is None and isinstance(X, pd.DataFrame):
