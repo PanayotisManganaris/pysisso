@@ -372,41 +372,34 @@ class SISSOParams(MSONable):
     """Class containing input parameters extracted from the SISSO output file."""
 
     PARAMS: list[tuple[str, str, type|Callable]] = [
-        ("property_type", "Descriptor dimension:", int),
+        ("property_type", "Property type:", int),
+        ("total_number_properties", "Number of tasks:", int),
         ("descriptor_dimension", "Descriptor dimension:", int),
-        ("total_number_properties", "Total number of properties:", int),
-        ("task_weighting", "Task_weighting:", list_of_ints),
-        ("number_of_samples", "Number of samples for each property:", list_of_ints),
+        ("number_of_samples", "Number of samples for each task:", list_of_ints),
         ("n_scalar_features", "Number of scalar features:", int),
         (
             "n_rungs",
-            r"Number of recursive calls for feature transformation \(rung of the "
-            r"feature space\):",
+            r"Tier of the feature space:",
             int,
         ),
         (
             "max_feature_complexity",
-            r"Max feature complexity \(number of operators in a feature\):",
-            int,
-        ),
-        (
-            "n_dimension_types",
-            r"Number of dimension\(unit\)-type \(for dimension analysis\):",
+            r"Maximal feature complexity \(number of operators in a feature\):",
             int,
         ),
         (
             "dimension_types",
-            "Dimension type for each primary feature:",
+            "Units of the input primary features (each represented by a vector):",
             matrix_of_floats,
         ),
         (
             "lower_bound_maxabs_value",
-            r"Lower bound of the max abs\. data value for the selected features:",
+            r"The feature will be discarded if the minimum of the maximal abs. value in it <",
             float,
         ),
         (
             "upper_bound_maxabs_value",
-            r"Upper bound of the max abs\. data value for the selected features:",
+            r"The faature will be discarded if the maximum of the maximal abs\. value in it >",
             float,
         ),
         (
@@ -415,34 +408,34 @@ class SISSOParams(MSONable):
             list_of_ints,
         ),
         ("operators", "Operators for feature construction:", list_of_strs),
-        ("sparsification_method", "Method for sparsification:", str),
-        ("n_topmodels", "Number of the top ranked models to output:", int),
-        ("fit_intercept", r"Fitting intercept\?", str_to_bool),
+        ("sparsification_method", "Method for sparse regression:", str),
+        ("n_topmodels", "Number of the top-ranked models to output:", int),
+        ("fit_intercept", "Fitting intercept:", str_to_bool),
         ("metric", "Metric for model selection:", str),
     ]
 
     def __init__(
         self,
-        property_type: int,
-        descriptor_dimension: int,
-        total_number_properties: int,
-        task_weighting: list[int],
-        number_of_samples: list[int],
-        n_scalar_features: int,
-        n_rungs: int,
-        max_feature_complexity: int,
-        n_dimension_types: int,
-        dimension_types: int,
-        lower_bound_maxabs_value: float,
-        upper_bound_maxabs_value: float,
-        SIS_subspaces_sizes: list[int],
-        operators: list[str],
-        sparsification_method: str,
-        n_topmodels: int,
-        fit_intercept: bool,
-        metric: str,
+        property_type: int|None = None,
+        descriptor_dimension: int|None = None,
+        total_number_properties: int|None = None,
+        task_weighting: list[int]|None = None,
+        number_of_samples: list[int]|None = None,
+        n_scalar_features: int|None = None,
+        n_rungs: int|None = None,
+        max_feature_complexity: int|None = None,
+        n_dimension_types: int|None = None,
+        dimension_types: inty|None = None,
+        lower_bound_maxabs_value: float|None = None,
+        upper_bound_maxabs_value: float|None = None,
+        SIS_subspaces_sizes: list[int]|None = None,
+        operators: list[str]|None = None,
+        sparsification_method: str|None = None,
+        n_topmodels: int|None = None,
+        fit_intercept: bool|None = None,
+        metric: str|None = None,
     ):  # noqa: D417
-        """Construct SISSOParams class.
+        """Construct SISSOParams object.
 
         All arguments not listed below are arguments from the SISSO code. For more
         information, see https://github.com/rouyang2017/SISSO.
@@ -468,25 +461,19 @@ class SISSOParams(MSONable):
 
     @classmethod
     def from_string(cls, string: str):
-        """Construct SISSOParams object from string."""
+        """Construct SISSOParams object from string. No validation necessary"""
         kwargs = {}
         for class_var, output_var_str, var_type in cls.PARAMS:
             if class_var == "dimension_types":
                 match = re.search(
-                    r"{}(.*?)\nLower bound".format(output_var_str), string, re.DOTALL
+                    r"(  (?:\d+\.\d* )+(?:\d+\.\d*)\n)+", string
                 )
-                if match is None:  # pragma: no cover, wrong SISSO output
-                    raise ValueError(
-                        'Should find a match for "{}"'.format(output_var_str)
-                    )
-                kwargs[class_var] = var_type(match.group(1).strip())
+                if match is not None:
+                    kwargs[class_var] = var_type(match[0])
             else:
                 matches = re.findall(r"{}.*?\n".format(output_var_str), string)
-                if len(matches) != 1:  # pragma: no cover, wrong SISSO output
-                    raise ValueError(
-                        'Should get exactly one match for "{}".'.format(output_var_str)
-                    )
-                kwargs[class_var] = var_type(matches[0].split()[-1])
+                if len(matches) != 1:
+                    kwargs[class_var] = var_type(matches[0].split()[-1])
         return cls(**kwargs)
 
     def __str__(self):
