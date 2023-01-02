@@ -21,7 +21,7 @@ from pysisso.utils import list_of_ints, list_of_strs, matrix_of_floats, str_to_b
 class SISSOVersion(MSONable):
     """Class containing information about the SISSO version used."""
 
-    def __init__(self, header_string: str, version: tuple[int, int, int]):
+    def __init__(self, header_string: str, version: list[int]):
         """Construct SISSOVersion class.
 
         Args:
@@ -41,7 +41,7 @@ class SISSOVersion(MSONable):
         version_sp = string.split(",")[0].split(".")
         return cls(
             header_string=string.strip(),
-            version=(int(version_sp[1]), int(version_sp[2]), int(version_sp[3])),
+            version=version_sp[1:]
         )
 
 
