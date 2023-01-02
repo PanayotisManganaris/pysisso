@@ -343,18 +343,8 @@ class SISSOIteration(MSONable):
             string: String from the SISSO.out output file corresponding to one
                 iteration of SISSO.
         """
-        lines = string.split("\n")
-        it_num = int(lines[0].split(":")[1])
+        sisso_model = SISSOModel.from_string(string)
 
-        r_sisso_model = r"={80}.*?={80}"
-        match_sisso_model = re.findall(r_sisso_model, string, re.DOTALL)
-        if len(match_sisso_model) != 1:  # pragma: no cover, wrong SISSO output
-            raise ValueError(
-                "Should get exactly one SISSO model excerpt in the string."
-            )
-        sisso_model = SISSOModel.from_string(match_sisso_model[0])
-
-        # TODO: different for iteration 1 !
         r_feature_spaces = r"Total number of features in the space phi.*?\n"
         match_feature_spaces = re.findall(r_feature_spaces, string)
         feature_spaces = {
@@ -363,21 +353,14 @@ class SISSOIteration(MSONable):
 
         r_SIS_subspace_size = r"Size of the SIS-selected subspace.*?\n"
         match_SIS_subspace_size = re.findall(r_SIS_subspace_size, string)
-        if len(match_SIS_subspace_size) != 1:  # pragma: no cover, wrong SISSO output
-            raise ValueError("Should get exactly one SIS subspace size in the string.")
         SIS_subspace_size = int(match_SIS_subspace_size[0].split()[-1])
 
-        r_cputime = r"Wall-clock time \(second\) for this DI:.*?\n"
+        r_cputime = r"Time \(second\) used for this DI:.*?\n"
         match_cputime = re.findall(r_cputime, string)
-        if len(match_cputime) != 1:  # pragma: no cover, wrong SISSO output
-            raise ValueError(
-                "Should get exactly one Wall-clock time in the string, "
-                "got {:d}.".format(len(match_cputime))
-            )
         cpu_time = float(match_cputime[0].split()[-1])
 
         return cls(
-            iteration_number=it_num,
+            iteration_number=sisso_model.dimension,
             sisso_model=sisso_model,
             feature_spaces=feature_spaces,
             SIS_subspace_size=SIS_subspace_size,
