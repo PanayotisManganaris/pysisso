@@ -17,6 +17,7 @@ import pandas as pd  # type: ignore
 from custodian import Custodian  # type: ignore
 from monty.os import cd, makedirs_p  # type: ignore
 from sklearn.base import BaseEstimator, RegressorMixin  # type: ignore
+from sklearn.preprocessing import FunctionTransformer
 
 from pysisso.inputs import SISSODat, SISSOIn
 from pysisso.jobs import SISSOJob
@@ -84,7 +85,7 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         run_dir: None|str = "SISSO_dir",
         clean_run_dir: bool = False,
     ):  # noqa: D417
-        """Construct SISSORegressor class.
+        """Construct SISSORegressor object.
 
         For more information on running the SISSO code see
         https://github.com/rouyang2017/SISSO/blob/master/SISSO_Guide.pdf
@@ -351,3 +352,33 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
             SISSORegressor: SISSO regressor.
         """
         raise NotImplementedError
+
+
+class SISTransformer(FunctionTransformer):
+    def __init__(self, descriptors):
+         """Construct SISTransformer object.
+
+         Args:
+             descriptors: FeatureSpace object containing combinatorial
+             feature space basis. It is best obtained from a fitted
+             SISSO estimator object
+         """
+
+        FunctionTransformer(
+            func=self.transformer_function,
+            feature_names_out=self.transformer_feature_names_out,
+            kw_args={"descriptors": descriptors}
+        )
+
+    @staticmethod
+    def transformer_function(X, descriptors):
+       SISfeatures = []
+       for desc in descriptors:
+           SISfeatures.append(desc.evaluate(X))
+           SISfeatures[-1].name = desc.descriptor_string
+        return X
+        
+    @staticmethod
+    def transformer_feature_names_out(transformerself, input_features):
+        params = transformerself.get_params()
+        return params["kw_args"]["descriptors"]
