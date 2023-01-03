@@ -174,27 +174,7 @@ class SISSODescriptor(MSONable):
         evalstring = evalstring.replace(")^2", ")**2")
         evalstring = evalstring.replace(")^3", ")**3")
         evalstring = evalstring.replace(")^6", ")**6")
-        # Deal with the ^-1 ...
-        while ")^-1" in evalstring:
-            idx1 = evalstring.index(")^-1")
-            level = 0
-            for ii in range(idx1, -1, -1):
-                if evalstring[ii] == ")":
-                    level += 1
-                elif evalstring[ii] == "(":
-                    level -= 1
-                if level == 0:
-                    idx2 = ii
-                    break
-            else:
-                raise ValueError(r'Could not find initial parenthesis for ")^-1".')
-            evalstring = (
-                evalstring[:idx2]
-                + "1.0/"
-                + evalstring[idx2:idx1]
-                + ")"
-                + evalstring[idx1 + 4 :]
-            )
+        evalstring = evalstring.replace(")^6", ")**-1")
 
         return {
             "evalstring": evalstring,
@@ -549,7 +529,7 @@ class SISSOOut(MSONable):
 
         r = r"Have a nice day !"
         match = re.search(r, string) 
-        if not match:
+        if not match and not allow_unfinished:
             raise ValueError(
                 "SISSO.out should end with 'Have a nave day !'"
             )
