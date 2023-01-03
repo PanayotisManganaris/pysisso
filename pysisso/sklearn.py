@@ -268,10 +268,13 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         with cd(self.run_dir):
             self.sisso_in.to_file(filename="SISSO.in")
             sisso_dat.to_file(filename="train.dat")
+
             job = SISSOJob(SISSO_exe=self.SISSOpath)
             c = Custodian(jobs=[job], handlers=[], validators=[])
             c.run()
+
             self.sisso_out = SISSOOut.from_file()
+            
 
         # Clean run directory
         if (
