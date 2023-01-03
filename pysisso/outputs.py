@@ -216,11 +216,6 @@ class SISSODescriptor(MSONable):
         sp = string.split(":")
         return cls(descriptor_id=int(sp[0]), descriptor_string=sp[1][1:-1])
 
-    @classmethod
-    def from_expressions_file(cls, path='Uspace.expressions'):
-        """Construct SISSODescriptor from expressions files in subspaces directory"""
-        pass
-
 class SISSOModel(MSONable):
     """
     Class containing one SISSO model.
@@ -596,6 +591,20 @@ class SISSOOut(MSONable):
         return [it.sisso_model for it in self.iterations]
 
 
+class FeatureSpace(MSONable):
+    """Class containing the SIS selected features.
+
+    This class is a container for the space_DDDd.expressions files (DDD being the
+    dimension of the descriptor) that are stored in the SIS_subspaces directory.
+    """
+    def __init__(
+        self,
+        iterations: list[SISSOIteration],
+        
+    ):
+        pass
+        # self.iterations = 
+
 class TopModels(MSONable):
     """Class containing summary info of the top N models from SISSO.
 
@@ -611,14 +620,6 @@ class TopModelsCoefficients(MSONable):
     This class is a container for the topNNNN_DDDd_coeff files (NNNN being the number
     of models in the file and DDD the dimension of the descriptor) that are stored
     in the models directory.
-    """
-
-
-class FeatureSpace(MSONable):
-    """Class containing the selected features from SISSO.
-
-    This class is a container for the space_DDDd.name files (DDD being the dimension
-    of the descriptor) that are stored in the feature_space directory.
     """
 
 
