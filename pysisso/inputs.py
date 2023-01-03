@@ -174,7 +174,7 @@ class SISSODat(MSONable):
         elif isinstance(self.nsample, list):
             return len(self.nsample)
         else:  # pragma: no cover
-            raise ValueError("Wrong nsample in SISSODat.")
+            raise ValueError("Wrong ntask in SISSODat.")
 
     @property
     def nsf(self):

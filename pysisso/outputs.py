@@ -274,13 +274,13 @@ class SISSOModel(MSONable):
                 of SISSO.
         """
         lines = string.split("\n")
-        dimension = int(lines[1].split("D descriptor")[0])
+        dimension = int(lines[0].split()[-1])
         descriptors: list[SISSODescriptor]|None = None
         coefficients = []
         intercept = []
         rmse = []
         maxae = []
-        for _, line in enumerate(lines):
+        for line in lines:
             if "@@@descriptor" in line:
                 descriptors = []
                 continue

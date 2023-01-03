@@ -138,6 +138,34 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         if not self.use_custodian:
             raise NotImplementedError
 
+    def fit(self, X, y, index=None, columns=None, tasks=None):
+        """Fit a SISSO regression based on inputs X and output y.
+
+        This method supports Multi-Task SISSO. For Single-Task SISSO, y must have a
+        shape (n_samples) or (n_samples, 1).
+
+        For Multi-Task SISSO, y must have a shape (n_samples, n_tasks) and can
+        contain NaN values in order to represent incomplete samples. The arrays will
+        be reshaped to fit SISSO's input files. NaNs will be automatically removed.
+
+        For example, if 2 of 10 samples have NaN for the first task, 1 sample has Nan
+        for the second task and 4 samples have Nan for the third task, the final
+        output array (y) will have a shape (3*10-2-1-4, 1), i.e. (23, 1), while the
+        final input array (X) will have a shape (23, n_features).
+
+        Args:
+            X: Feature vectors as an array-like of shape (n_samples, n_features).
+            y: Target values as an array-like of shape (n_samples,)
+                or (n_samples, n_tasks).
+            index: List of string identifiers for each sample. If None, "sampleN"
+                with N=[1, ..., n_samples] will be used.
+            columns: List of string names of the features. If None, "featN"
+                with N=[1, ..., n_features] will be used.
+            tasks: When Multi-Task SISSO is used, this is the list of string names
+                that will be used for each task/property. If None, "taskN"
+                with N=[1, ..., n_tasks] will be used.
+
+        """
         self.sisso_in = SISSOIn.from_sisso_keywords(  # pylint: disable=W0201
             ptype=1,
             ntask=self.ntask,
@@ -171,34 +199,6 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
             L1_weighted=self.L1_weighted,
         )
 
-    def fit(self, X, y, index=None, columns=None, tasks=None):
-        """Fit a SISSO regression based on inputs X and output y.
-
-        This method supports Multi-Task SISSO. For Single-Task SISSO, y must have a
-        shape (n_samples) or (n_samples, 1).
-
-        For Multi-Task SISSO, y must have a shape (n_samples, n_tasks) and can
-        contain NaN values in order to represent incomplete samples. The arrays will
-        be reshaped to fit SISSO's input files. NaNs will be automatically removed.
-
-        For example, if 2 of 10 samples have NaN for the first task, 1 sample has Nan
-        for the second task and 4 samples have Nan for the third task, the final
-        output array (y) will have a shape (3*10-2-1-4, 1), i.e. (23, 1), while the
-        final input array (X) will have a shape (23, n_features).
-
-        Args:
-            X: Feature vectors as an array-like of shape (n_samples, n_features).
-            y: Target values as an array-like of shape (n_samples,)
-                or (n_samples, n_tasks).
-            index: List of string identifiers for each sample. If None, "sampleN"
-                with N=[1, ..., n_samples] will be used.
-            columns: List of string names of the features. If None, "featN"
-                with N=[1, ..., n_features] will be used.
-            tasks: When Multi-Task SISSO is used, this is the list of string names
-                that will be used for each task/property. If None, "taskN"
-                with N=[1, ..., n_tasks] will be used.
-
-        """
         # Set up columns. These columns are used by the SISSO model wrapper afterwards
         # for the prediction
         if columns is None and isinstance(X, pd.DataFrame):
