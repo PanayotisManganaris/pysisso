@@ -53,9 +53,8 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         task_weighting=1,
         desc_dim=2,
         restart=False,
-        rung=2,
         opset="(+)(-)",
-        maxcomplexity=10,
+        fcomplexity=5,
         dimclass=None,
         maxfval_lb=1e-3,
         maxfval_ub=1e5,
@@ -104,9 +103,8 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         self.task_weighting = task_weighting
         self.desc_dim = desc_dim
         self.restart = restart
-        self.rung = rung
         self.opset = opset
-        self.maxcomplexity = maxcomplexity
+        self.fcomplexity = fcomplexity
         self.dimclass = dimclass
         self.maxfval_lb = maxfval_lb
         self.maxfval_ub = maxfval_ub
@@ -175,7 +173,7 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
             restart=self.restart,
             rung=self.rung,
             opset=self.opset,
-            maxcomplexity=self.maxcomplexity,
+            fcomplexity=self.fcomplexity,
             dimclass=self.dimclass,
             maxfval_lb=self.maxfval_lb,
             maxfval_ub=self.maxfval_ub,
