@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 from typing import Callable, Mapping
 
@@ -174,7 +175,7 @@ class SISSODescriptor(MSONable):
         evalstring = evalstring.replace(")^2", ")**2")
         evalstring = evalstring.replace(")^3", ")**3")
         evalstring = evalstring.replace(")^6", ")**6")
-        evalstring = evalstring.replace(")^6", ")**-1")
+        evalstring = evalstring.replace(")^-1", ")**-1")
 
         return {
             "evalstring": evalstring,
@@ -579,11 +580,24 @@ class FeatureSpace(MSONable):
     """
     def __init__(
         self,
-        iterations: list[SISSOIteration],
-        
+        path: str = 'SIS_subspaces/Uspace.expressions',
     ):
-        pass
-        # self.iterations = 
+        self.descriptors: list[SISSODescriptor] = []
+
+        if os.path.isfile(path):
+            with open(path, 'r') as f:
+                for num, line in enumerate(f):
+                    self.descriptors.append(
+                        SISSODescriptor(num, line.split()[0])
+                    )
+        else:
+            warnings.warn(
+                "No SIS subspaces recovered for storage, ensure SISSO returns",
+                "subspaces directory"
+            )
+
+    def __iter__(self):
+        return self.descriptors.__iter__()
 
 class TopModels(MSONable):
     """Class containing summary info of the top N models from SISSO.
