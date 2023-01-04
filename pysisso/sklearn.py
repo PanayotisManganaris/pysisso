@@ -353,7 +353,7 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
 
 
 class SISTransformer(FunctionTransformer):
-    def __init__(self, sis_out):
+    def __init__(self, sis_out, index=[], columns=[]):
          """Construct SISTransformer object.
 
          Args:
@@ -361,14 +361,31 @@ class SISTransformer(FunctionTransformer):
              feature space basis. It is best obtained from a fitted
              SISSO estimator object
          """
+         self.sis_out = sis_out
+         self.index = index # or [
+         #     "sample{:d}".format(ii) for ii in range(1, X.shape[0] + 1)
+         # ]
+         self.columns = columns # or [
+         #     "feat{:d}".format(ifeat) for ifeat in range(1, X.shape[1] + 1)
+         # ]
          super().__init__(
              func=self.transformer_function,
              feature_names_out=self.transformer_feature_names_out,
-             kw_args={"sis_out": sis_out}
+             kw_args={
+                 "sis_out": self.sis_out,
+                 "index": self.index,
+                 "columns": self.columns,
+             }
          )
 
     @staticmethod
-    def transformer_function(X, *, sis_out):
+    def transformer_function(X, *, sis_out, index, columns):
+        X = np.array(X)
+        X = pd.DataFrame(
+            X,
+            # index = index,
+            columns = columns
+        )
         SISfeatures = []
         for desc in sis_out:
             SISfeatures.append(desc.evaluate(X))
@@ -378,8 +395,9 @@ class SISTransformer(FunctionTransformer):
     @staticmethod
     def transformer_feature_names_out(transformerself, input_features):
         params = transformerself.get_params()
+        print(params)
         sis_out = params["kw_args"]["sis_out"]
         output_features = []
         for desc in sis_out:
             output_features.append(desc.descriptor_string)
-        return output_features
+        return output_features[:, [0,1,2,3,4,5,6,7,8,9,10,20,21,22,23,24,25,40,41,42,43,44,45]]
