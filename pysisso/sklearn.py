@@ -21,7 +21,8 @@ from sklearn.preprocessing import FunctionTransformer
 
 from pysisso.inputs import SISSODat, SISSOIn
 from pysisso.jobs import SISSOJob
-from pysisso.outputs import SISSOOut
+import pysisso.outputs # import SISSOOut, FeatureSpace
+# explicit import necessary to alloy joblib.dump of estimators
 
 
 def get_timestamp(tstamp: datetime|None = None) -> object:
