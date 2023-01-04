@@ -272,8 +272,8 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
             c = Custodian(jobs=[job], handlers=[], validators=[])
             c.run()
 
-            self.sisso_out = SISSOOut.from_file()
-            
+            self.sisso_out = pysisso.outputs.SISSOOut.from_file()
+            self.sis_out = pysisso.outputs.FeatureSpace()
 
         # Clean run directory
         if (
@@ -353,30 +353,33 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
 
 
 class SISTransformer(FunctionTransformer):
-    def __init__(self, descriptors):
+    def __init__(self, sis_out):
          """Construct SISTransformer object.
 
          Args:
-             descriptors: FeatureSpace object containing combinatorial
+             sis_out: FeatureSpace object containing combinatorial
              feature space basis. It is best obtained from a fitted
              SISSO estimator object
          """
-
-        FunctionTransformer(
-            func=self.transformer_function,
-            feature_names_out=self.transformer_feature_names_out,
-            kw_args={"descriptors": descriptors}
-        )
+         super().__init__(
+             func=self.transformer_function,
+             feature_names_out=self.transformer_feature_names_out,
+             kw_args={"sis_out": sis_out}
+         )
 
     @staticmethod
-    def transformer_function(X, descriptors):
-       SISfeatures = []
-       for desc in descriptors:
-           SISfeatures.append(desc.evaluate(X))
-           SISfeatures[-1].name = desc.descriptor_string
-        return X
+    def transformer_function(X, *, sis_out):
+        SISfeatures = []
+        for desc in sis_out:
+            SISfeatures.append(desc.evaluate(X))
+            SISfeatures[-1].name = desc.descriptor_string
+        return pd.concat(SISfeatures, axis=1).to_numpy()
         
     @staticmethod
     def transformer_feature_names_out(transformerself, input_features):
         params = transformerself.get_params()
-        return params["kw_args"]["descriptors"]
+        sis_out = params["kw_args"]["sis_out"]
+        output_features = []
+        for desc in sis_out:
+            output_features.append(desc.descriptor_string)
+        return output_features
