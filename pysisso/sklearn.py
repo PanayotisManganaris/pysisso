@@ -172,7 +172,6 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
             task_weighting=self.task_weighting,
             desc_dim=self.desc_dim,
             restart=self.restart,
-            rung=self.rung,
             opset=self.opset,
             fcomplexity=self.fcomplexity,
             dimclass=self.dimclass,
