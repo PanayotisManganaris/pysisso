@@ -281,7 +281,7 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         ):  # TODO: add check here to not remove "." if the user passes . ?
             shutil.rmtree(self.run_dir)
 
-    def predict(self, X, index=None):
+    def predict(self, X, index=[], columns=[]):
         """Predict output based on a fitted SISSO regression.
 
         Args:
@@ -290,8 +290,9 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
                 with N=[1, ..., n_samples] will be used.
         """
         X = np.array(X)
-        index = index or ["item{:d}".format(ii) for ii in range(X.shape[0])]
-        data = pd.DataFrame(X, index=index, columns=self.columns)
+        index = list(index) or ["item{:d}".format(ii) for ii in range(X.shape[0])]
+        columns = list(columns) or self.columns
+        data = pd.DataFrame(X, index=index, columns=columns)
         return self.sisso_out.model.predict(data)
 
     @classmethod
