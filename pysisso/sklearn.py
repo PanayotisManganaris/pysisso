@@ -327,7 +327,6 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
         """
         return cls(
             opset="(+)(-)(*)(/)(exp)(exp-)(^-1)(^2)(^3)(sqrt)(cbrt)(log)(|-|)(scd)(^6)",
-            rung=0,
             desc_dim=desc_dim,
             subs_sis=1,
             method="L0",
