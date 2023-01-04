@@ -136,7 +136,7 @@ class SISSODescriptor(MSONable):
             replaced_string = replaced_string.replace(op, "#" * len(op))
         # Get the features in order of the string and get the unique list of features
         if replaced_string[0] != "#" or replaced_string[-1] != "#":
-            raise ValueError('String should start and end with "#"')
+            raise ValueError('%s should start and end with "#"' % replaced_string)
         features_in_string = []
         in_feature_word = False
         ichar_start = None
