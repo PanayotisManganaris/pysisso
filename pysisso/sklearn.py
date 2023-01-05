@@ -273,7 +273,7 @@ class SISSORegressor(RegressorMixin, BaseEstimator):
             c.run()
 
             self.sisso_out = pysisso.outputs.SISSOOut.from_file()
-            self.sis_out = pysisso.outputs.FeatureSpace()
+            self.sis_out = pysisso.outputs.FeatureSpace.from_dir()
 
         # Clean run directory
         if (

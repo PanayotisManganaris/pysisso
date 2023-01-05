@@ -8,7 +8,8 @@
 
 from __future__ import annotations
 
-import os
+import os, warnings
+from pathlib import Path
 import re
 from typing import Callable, Mapping
 
@@ -572,32 +573,60 @@ class SISSOOut(MSONable):
         return [it.sisso_model for it in self.iterations]
 
 
-class FeatureSpace(MSONable):
-    """Class containing the SIS selected features.
+class FeatureSpace(pd.Series, MSONable):
+    """Series containing the SIS selected features.
+    Subclass improves user options when instantiating SISTransformers
 
-    This class is a container for the space_DDDd.expressions files (DDD being the
+    This class is a container for the Uspace_DDDd.expressions files (DDD being the
     dimension of the descriptor) that are stored in the SIS_subspaces directory.
     """
-    def __init__(
-        self,
-        path: str = 'SIS_subspaces/Uspace.expressions',
-    ):
-        self.descriptors: list[SISSODescriptor] = []
+    @property
+    def _constructor(self):
+        """tell Pandas to keep `FeatueSpace` objects across operations"""
+        return FeatureSpace
 
-        if os.path.isfile(path):
-            with open(path, 'r') as f:
-                for num, line in enumerate(f):
-                    self.descriptors.append(
-                        SISSODescriptor(num, line.split()[0])
-                    )
-        else:
+    def __init__(self, *args, **kwargs):
+        super(FeatureSpace, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def _warn_user(cls, path):
+        if not (os.path.isfile(path) or os.path.exists(path)):
             warnings.warn(
-                "No SIS subspaces recovered for storage, ensure SISSO returns",
-                "subspaces directory"
+"""No SIS subspaces recovered for storage.
+Ensure SISSO returns subspaces directory"""
             )
 
-    def __iter__(self):
-        return self.descriptors.__iter__()
+    @classmethod
+    def from_dir(cls, path: str = 'SIS_subspaces'):
+        p = Path(path)
+        clslist = []
+        p = p.glob('space_*.expressions')
+        for f in p:
+            clslist.append(cls.from_file(str(f)))
+        return pd.concat(clslist)
+
+    @classmethod
+    def from_file(cls, path: str = 'SIS_subspaces/Uspace.expressions'):
+        cls._warn_user(path)
+        descriptors = []
+        subspace = path.split("/")[-1].split(".")[0].split("_")[-1]
+        try: #don't force regression to fail if path isn't present
+            with open(path, 'r') as f:
+                for num, line in enumerate(f):
+                    descriptors.append(
+                        SISSODescriptor(num, line.split()[0])
+                    )
+            indexes = pd.MultiIndex.from_product(
+                [
+                    [subspace], list(range(num+1))
+                ], names=('iteration', 'rank')
+            )
+            return cls(
+                data = descriptors,
+                index = indexes
+            )
+        except FileNotFoundError:
+            pass
 
 class TopModels(MSONable):
     """Class containing summary info of the top N models from SISSO.
