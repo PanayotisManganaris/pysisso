@@ -362,12 +362,8 @@ class SISTransformer(FunctionTransformer):
              SISSO estimator object
          """
          self.sis_out = sis_out
-         self.index = index # or [
-         #     "sample{:d}".format(ii) for ii in range(1, X.shape[0] + 1)
-         # ]
-         self.columns = columns # or [
-         #     "feat{:d}".format(ifeat) for ifeat in range(1, X.shape[1] + 1)
-         # ]
+         self.index = index
+         self.columns = columns
          super().__init__(
              func=self.transformer_function,
              feature_names_out=self.transformer_feature_names_out,
@@ -383,21 +379,23 @@ class SISTransformer(FunctionTransformer):
         X = np.array(X)
         X = pd.DataFrame(
             X,
-            # index = index,
-            columns = columns
+            index = index or None,
+            columns = columns or [
+                "feat{:d}".format(ifeat) for ifeat in range(1, X.shape[1] + 1)
+            ]
         )
         SISfeatures = []
         for desc in sis_out:
             SISfeatures.append(desc.evaluate(X))
             SISfeatures[-1].name = desc.descriptor_string
-        return pd.concat(SISfeatures, axis=1).to_numpy()
+        return pd.concat(SISfeatures, axis=1)
         
     @staticmethod
     def transformer_feature_names_out(transformerself, input_features):
         params = transformerself.get_params()
-        print(params)
-        sis_out = params["kw_args"]["sis_out"]
+        sis_out = params["sis_out"]
         output_features = []
         for desc in sis_out:
             output_features.append(desc.descriptor_string)
-        return output_features[:, [0,1,2,3,4,5,6,7,8,9,10,20,21,22,23,24,25,40,41,42,43,44,45]]
+        return output_features
+    
